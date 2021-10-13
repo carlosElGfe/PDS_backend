@@ -157,7 +157,7 @@ def join():
         
         #GENERATE RESPONSE
         reponse = {}
-        reponse['sala'] = sala
+        reponse[str("juego usuario creado con extipo")] = sala
          
         return Response(reponse, status=201, mimetype='application/json')
     except ValueError:
