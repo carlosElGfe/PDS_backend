@@ -12,7 +12,7 @@ db = SQLAlchemy(app)
 #MODELS
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=False, nullable=False)
+    name = db.Column(db.String(120), unique=True, nullable=False)
     joined = db.Column(db.DateTime, nullable=False,default=datetime.utcnow)
     def __repr__(self):
         return '<User %r>' % self.name
@@ -44,9 +44,28 @@ def index():
     context['item'] = "ejemplo"
     return jsonify(context)
 
+@app.route("/login")
+def login():
+    try:
+        # localhost:5000/login?username=john
+        #COLLECT THE PARAMS IN THE PYTHON CODE
+        name = request.args.get('username')
+        
+        targer_user = User.query.filter_by(name = name).first()
+        
+        reponse = {}
+        reponse[targer_user.id] = targer_user.id
+         
+        return Response(reponse, status=201, mimetype='application/json')
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+
 @app.route("/new_game")
 def new_game():
     try:
+        
+        #  localhost:5000/new_game?current_id=1&players=4&sala=33
+        
         #COLLECT THE PARAMS IN THE PYTHON CODE
         sala = request.args.get('sala')
         jugadores = request.args.get('players')
@@ -66,9 +85,55 @@ def new_game():
         
         #GENERATE RESPONSE
         reponse = {}
-        reponse['sala'] = sala
+        reponse[sala] = sala
         reponse['jugadores'] = jugadores
         return Response(reponse, status=201, mimetype='application/json')
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+    
+@app.route("/new_user")
+def new_user():
+    try:
+        #  localhost:5000/new_user?username=pedro
+        
+        #COLLECT THE PARAMS IN THE PYTHON CODE
+        user_name = request.args.get('username')
+        
+        #RELATE THE GAME TO A USER (current)
+        new_user = User(name = user_name)
+        db.session.add(new_user)
+        
+        #STAGE THE CHANGES
+        db.session.commit()
+        
+        #GENERATE RESPONSE
+        reponse = {}
+        return Response(reponse, status=201, mimetype='application/json')
+    except Exception:
+        return Response("Error", status=400, mimetype='application/json')
+
+@app.route("/games")
+def games():
+    try:
+        #  localhost:5000/games?my_id=1
+        
+        #COLLECT THE PARAMS IN THE PYTHON CODE
+        my_id = int(request.args.get('my_id'))
+        
+        #RELATE THE GAME TO A USER (current)
+        games_ids = GameUser.query.filter_by(jugador_id = my_id).distinct()
+        resp = {}
+        for value in games_ids:
+            buff = []
+            ganembuffer = Game.query.filter_by(id = value.game_id).first()
+            buff.append(value.game_id)
+            buff.append(ganembuffer.players)
+            buff.append(ganembuffer.created)
+            resp[value.game_id] = (buff)
+            print(value.game_id)
+        respp = {}
+        respp[str(resp)] = resp
+        return Response(respp, status=201, mimetype='application/json')
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
 
