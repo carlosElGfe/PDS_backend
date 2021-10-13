@@ -72,6 +72,58 @@ def new_game():
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
 
+@app.route("/join")
+def join():
+    try:
+        #COLLECT THE PARAMS IN THE PYTHON CODE
+        sala = request.args.get('sala')
+        my_id = request.args.get('current_id')
+        current_user = User.query.filter_by(id = int(my_id)).first()
+        
+        #FIND THE GAME
+        game = Game.query.filter_by(id = int(sala)).first()
+                
+        #RELATE THE GAME TO A USER (current)
+        gameuser = GameUser(game = game, user = current_user)
+        db.session.add(gameuser)
+        
+        #STAGE THE CHANGES
+        db.session.commit()
+        
+        #GENERATE RESPONSE
+        reponse = {}
+        reponse['sala'] = sala
+         
+        return Response(reponse, status=201, mimetype='application/json')
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+    
+@app.route("/invite")
+def invite():
+    try:
+        #COLLECT THE PARAMS IN THE PYTHON CODE
+        sala = request.args.get('sala')
+        target_id = request.args.get('target_id')
+        targer_user = User.query.filter_by(id = int(target_id)).first()
+        
+        #FIND THE GAME
+        game = Game.query.filter_by(id = int(sala)).first()
+                
+        #RELATE THE GAME TO A USER (current)
+        gameuser = GameUser(game = game, user = targer_user)
+        db.session.add(gameuser)
+        
+        #STAGE THE CHANGES
+        db.session.commit()
+        
+        #GENERATE RESPONSE
+        reponse = {}
+        reponse['sala'] = "Target invited succesfully!"
+         
+        return Response(reponse, status=201, mimetype='application/json')
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+
 @app.route("/jugada")
 def jugada():
     #TODO terminar esta ruta para poder jugar sobre una sala
