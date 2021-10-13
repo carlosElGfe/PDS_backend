@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, Response
+from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
 from pymongo import MongoClient
 from utils import conection
@@ -6,6 +7,7 @@ import json
 from datetime import datetime
 
 app = Flask(__name__)
+cors = CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
 
