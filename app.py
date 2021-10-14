@@ -55,9 +55,9 @@ def login():
         targer_user = User.query.filter_by(name = name).first()
         
         reponse = {}
-        reponse[targer_user.id] = targer_user.id
+        reponse['user_id'] = targer_user.id
          
-        return Response(reponse, status=201, mimetype='application/json')
+        return jsonify(reponse)
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
 
