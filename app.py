@@ -43,8 +43,7 @@ db.create_all()
 def index():
     #userr = User.query.filter_by(id=1).first().name
     context = {}
-    context['item'] = "ejemplo"
-    return jsonify(context)
+    return Response(context, status=200, mimetype='application/json')
 
 @app.route("/login")
 def login():
