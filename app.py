@@ -57,7 +57,7 @@ def login():
         
         reponse = {}
         reponse[targer_user.id] = targer_user.id
-         
+        reponse['erfgb'] = 'erfg' 
         return Response(reponse, status=201, mimetype='application/json')
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
@@ -168,6 +168,7 @@ def join():
 @app.route("/invite")
 def invite():
     try:
+        
         #COLLECT THE PARAMS IN THE PYTHON CODE
         sala = request.args.get('sala')
         target_id = request.args.get('target_id')
