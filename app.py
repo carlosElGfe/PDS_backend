@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS, cross_origin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 from pymongo import MongoClient
 from utils import conection
 import json
@@ -36,6 +37,17 @@ class GameUser(db.Model):
         backref=db.backref('usergames', lazy=True))
     def __repr__(self):
         return '<gameuser %r>' % str(self.id)
+
+#fiend request
+class UserUser(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jugador_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False) 
+    target_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False) 
+    state = db.Column(db.Boolean, default=False)
+    jugador = relationship("User", foreign_keys=[jugador_id])
+    target = relationship("User", foreign_keys=[target_id])
+    def __repr__(self):
+        return '<Friend Status %r>' % str(self.id)
  
 db.create_all()
 #MVC    
@@ -163,6 +175,70 @@ def join():
         return Response(reponse, status=201, mimetype='application/json')
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
+
+@app.route("/add_friend")
+def add_friend():
+    try:
+        my_id = request.args.get('current_id')
+        target_id = request.args.get('target_id')
+        current_user = User.query.filter_by(id = int(my_id)).first()
+        target_user = User.query.filter_by(id = int(target_id)).first()
+        
+        #CREATE the user user instance
+        useruser = UserUser( jugador = current_user, target = target_user)
+        db.session.add(useruser)
+        
+        #STAGE THE CHANGES
+        db.session.commit()
+        reponse = {}
+        reponse['current'] = my_id
+        reponse['target'] = target_id
+        reponse['status'] = False
+        reponse['id'] = useruser.id
+        return jsonify(reponse)
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+        
+@app.route("/accept_friend_request")
+def accept_friend_request():
+    try:
+        my_id = request.args.get('current_id')
+        target_id = request.args.get('target_id')
+        current_user = User.query.filter_by(id = int(my_id)).first()
+        target_user = User.query.filter_by(id = int(target_id)).first()
+        
+        #Fetch and update the user user instance
+        useruser = UserUser.query.filter_by(jugador = current_user, target = target_user).first()
+        
+        useruser.status= True
+        
+        #STAGE THE CHANGES
+        db.session.commit()
+        reponse = {}
+        reponse['current'] = my_id
+        reponse['target'] = target_id
+        reponse['status'] = True
+        return jsonify(reponse)
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+        
+@app.route("/get_friends")
+def get_friends():
+    try:
+        my_id = request.args.get('current_id')
+        current_user = User.query.filter_by(id = int(my_id)).first()
+        
+        #Fetch and update the user user instance
+        userusers = UserUser.query.filter_by(jugador = current_user, state = True).all()
+        reponse = {}
+        cont = 1
+        for i in userusers:
+            reponse[str(cont)] = i.name
+        reponse['current'] = my_id
+        return jsonify(reponse)
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
+   
     
 @app.route("/invite")
 def invite():
