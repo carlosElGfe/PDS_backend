@@ -238,6 +238,23 @@ def get_friends():
         return jsonify(reponse)
     except ValueError:
         return Response("Error", status=400, mimetype='application/json')
+    
+@app.route("/get_friends_not_accepted")
+def get_friends_not_accepted():
+    try:
+        my_id = request.args.get('current_id')
+        current_user = User.query.filter_by(id = int(my_id)).first()
+        
+        #Fetch and update the user user instance
+        userusers = UserUser.query.filter_by(jugador = current_user, state = False).all()
+        reponse = {}
+        cont = 1
+        for i in userusers:
+            reponse[str(cont)] = i.name
+        reponse['current'] = my_id
+        return jsonify(reponse)
+    except ValueError:
+        return Response("Error", status=400, mimetype='application/json')
    
     
 @app.route("/invite")
