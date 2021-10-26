@@ -38,6 +38,19 @@ class GameUser(db.Model):
     def __repr__(self):
         return '<gameuser %r>' % str(self.id)
 
+class GameData(db.model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'),nullable=False) 
+    jugador_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False) 
+    target_id = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=False) 
+    game = db.relationship('Game',
+        backref=db.backref('usergames', lazy=True))
+    jugador = relationship("User", foreign_keys=[jugador_id]) 
+    target = relationship("User", foreign_keys=[target_id])
+    def __repr__(self):
+        return '<Gamedata %r>' % str(self.id)
+    
+
 #fiend request
 class UserUser(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -90,6 +103,7 @@ def new_game():
         
         #RELATE THE GAME TO A USER (current)
         gameuser = GameUser(game = game, user = current_user)
+        
         db.session.add(game)
         db.session.add(gameuser)
         db.session.commit()
